@@ -129,6 +129,30 @@ public class CookiesTestCase {
     }
 
     @Test
+    public void testRequestCookieDomainPathVersionQuoted() {
+        // Quoted values for $Version, $Domain and $Path must have their surrounding quotes stripped.
+        Map<String, Cookie> cookies = Cookies.parseRequestCookies(4, false, Arrays.asList(
+                "$Version=\"1\"; CUSTOMER=WILE_E_COYOTE; $Domain=\"LOONEY_TUNES\"; $Path=\"/\""), LegacyCookieSupport.COMMA_IS_SEPARATOR, LegacyCookieSupport.ALLOW_HTTP_SEPARATORS_IN_V0, false);
+
+        // RFC 6265 treats the domain, path and version attributes of an RFC 2109 cookie as a separate cookies
+        Assert.assertTrue(cookies.containsKey("$Domain"));
+        Assert.assertTrue(cookies.containsKey("$Version"));
+        Assert.assertTrue(cookies.containsKey("$Path"));
+
+        // The separate RFC-6265 cookies must not carry surrounding quotes in their values.
+        Assert.assertEquals("1", cookies.get("$Version").getValue());
+        Assert.assertEquals("LOONEY_TUNES", cookies.get("$Domain").getValue());
+        Assert.assertEquals("/", cookies.get("$Path").getValue());
+
+        Cookie cookie = cookies.get("CUSTOMER");
+        Assert.assertEquals("CUSTOMER", cookie.getName());
+        Assert.assertEquals("WILE_E_COYOTE", cookie.getValue());
+        Assert.assertEquals("LOONEY_TUNES", cookie.getDomain());
+        Assert.assertEquals(1, cookie.getVersion());
+        Assert.assertEquals("/", cookie.getPath());
+    }
+
+    @Test
     public void testMultipleRequestCookies() {
         Map<String, Cookie> cookies = Cookies.parseRequestCookies(5, false, Arrays.asList(
                 "CUSTOMER=WILE_E_COYOTE; $Version=1;SHIPPING=FEDEX; $Domain=LOONEY_TUNES; $Path=/"));

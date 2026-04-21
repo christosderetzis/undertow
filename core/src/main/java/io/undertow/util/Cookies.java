@@ -458,12 +458,15 @@ public class Cookies {
         }
 
         if (!cookieJar.name.isEmpty() && cookieJar.name.charAt(0) == '$') {
+            // RFC 2109 allows quoted strings for $Version, $Domain and $Path attribute values.
+            // Strip surrounding quotes so callers always receive a clean value.
+            final String cleanValue = stripSurroundingQuotes(value);
             if(cookieJar.name.equals(VERSION)) {
-                cookieJar.version = Integer.parseInt(value);
+                cookieJar.version = Integer.parseInt(cleanValue);
                 //Theoretically this should happen only once at the start
-                applyAdditional(cookieJar, cookieJar.name, value);
+                applyAdditional(cookieJar, cookieJar.name, cleanValue);
             } else if(cookieJar.currentCookie != null) {
-                applyAdditional(cookieJar, cookieJar.name, value);
+                applyAdditional(cookieJar, cookieJar.name, cleanValue);
             }
             return;
         } else {
@@ -499,6 +502,14 @@ public class Cookies {
         return;
     }
 
+    private static String stripSurroundingQuotes(final String value) {
+        if (value != null && value.length() >= 2
+                && value.charAt(0) == '"'
+                && value.charAt(value.length() - 1) == '"') {
+            return value.substring(1, value.length() - 1);
+        }
+        return value;
+    }
 
     private static String unescapeDoubleQuotes(final String value) {
         if (value == null || value.isEmpty()) {
