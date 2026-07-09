@@ -1,6 +1,10 @@
 package io.undertow.server;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -89,7 +93,10 @@ class MapDelegatingToMultiValueStorage<K, V> implements Map<K, V> {
 
     @Override
     public Collection<V> values() {
-        throw new UnsupportedOperationException();
+        final List<V> retVal = new ArrayList<>();
+        Iterator<V> i = target.valuesIterator();
+        while (i.hasNext()) retVal.add(i.next());
+        return Collections.unmodifiableList(retVal);
     }
 
     @Override
